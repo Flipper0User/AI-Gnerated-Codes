@@ -1,0 +1,83 @@
+# Import the necessary libraries
+import RPi.GPIO as GPIO
+import time
+import hashlib
+from lcd import LCD
+from speech_recognition import Recognizer, Microphone
+
+# Set the GPIO mode
+GPIO.setmode(GPIO.BCM)
+
+# Set the GPIO pin for the antenna
+antenna_pin = 18
+
+# Set the GPIO pin for the speaker
+speaker_pin = 24
+
+# Set the frequency for the two-way radio
+radio_frequency = 446.00
+
+# Set the sensitivity threshold for the signal strength
+sensitivity_threshold = 50
+
+# Set the secret encryption key
+encryption_key = "my_secret_key"
+
+# Set the language for the speech recognition
+speech_language = "en-US"
+
+# Create an LCD screen object
+lcd = LCD(width=16, height=2)
+
+# Create a speech recognizer object
+recognizer = Recognizer()
+
+# Create a microphone object
+microphone = Microphone()
+
+# Configure the antenna pin as an input
+GPIO.setup(antenna_pin, GPIO.IN)
+
+# Configure the speaker pin as an output
+GPIO.setup(speaker_pin, GPIO.OUT)
+
+# Read the signal strength from the antenna pin
+signal_strength = GPIO.input(antenna_pin)
+
+# Check if the signal strength is above the sensitivity threshold
+if signal_strength > sensitivity_threshold:
+    # If the signal strength is above the threshold, listen for verbal messages using the microphone
+    with microphone as source:
+        # Adjust the recognizer's energy threshold to detect faint speech
+        recognizer.adjust_for_ambient_noise(source)
+
+        # Print a message on the LCD screen indicating that the microphone is listening
+        lcd.print("Listening...")
+
+        # Listen for speech until the user stops speaking
+        audio = recognizer.listen(source)
+
+    # Transcribe the speech to text
+    transcribed_message = recognizer.recognize_google(audio, language=speech_language)
+
+    # Encrypt the transcribed message
+    encrypted_message = encrypt_message(transcribed_message, encryption_key)
+
+    # Transmit the encrypted message
+    for character in encrypted_message:
+        # Convert the character to its corresponding Morse code
+        morse_code = morse_code_table[character]
+
+        # Emit the Morse code using the speaker
+        for dot_or_dash in morse_code:
+            if dot_or_dash == ".":
+                # Emit a dot sound
+                GPIO.output(speaker_pin, GPIO.HIGH)
+                time.sleep(0.1)
+                GPIO.output(speaker_pin, GPIO.LOW)
+                time.sleep(0.1)
+            elif dot_or_dash == "-":
+                # Emit a dash sound
+                GPIO.output(speaker_pin, GPIO.HIGH)
+                time.sleep(0.3)
+                GPIO.
