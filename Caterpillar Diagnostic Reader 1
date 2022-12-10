@@ -1,0 +1,30 @@
+# Import the necessary libraries
+import RPi.GPIO as GPIO
+
+# Set the GPIO pin that will be used to connect to the machinery's diagnostic port
+DIAGNOSTIC_PIN = 4
+
+# Set the baud rate for communication with the machinery's diagnostic port
+BAUD_RATE = 9600
+
+# Set the protocol for communication with the machinery's diagnostic port
+PROTOCOL = "J1939"
+
+# Set up the GPIO pin for communication with the machinery's diagnostic port
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(DIAGNOSTIC_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Continuously loop through the following steps:
+while True:
+    # Check the state of the diagnostic pin
+    if GPIO.input(DIAGNOSTIC_PIN) == 0:
+        # If the pin is low, read the codes from the machinery's diagnostic port
+        codes = read_diagnostic_codes(DIAGNOSTIC_PIN, BAUD_RATE, PROTOCOL)
+
+        # Loop through the diagnostic codes
+        for code in codes:
+            # Look up the possible resolutions for the code in the Caterpillar database
+            resolutions = lookup_code_resolutions(code)
+
+            # Print the code and its possible resolutions to the console
+            print(code, ":", resolutions)
