@@ -1,0 +1,51 @@
+# Import the necessary libraries
+import radio
+import RPi.GPIO as GPIO
+
+# Set the GPIO pin that will be used for the PTT (Push-To-Talk) button
+PTT_PIN = 4
+
+# Set the radio frequency (in MHz) that will be used for the repeater
+FREQUENCY = 146.520
+
+# Set the transmit and receive offsets (in kHz) for the repeater
+TX_OFFSET = 0.600
+RX_OFFSET = 0.600
+
+# Set the transmit and receive squelch levels (in dB) for the repeater
+TX_SQUELCH = 10
+RX_SQUELCH = 10
+
+# Set the transmit and receive deviation (in kHz) for the repeater
+TX_DEVIATION = 5
+RX_DEVIATION = 5
+
+# Set the transmit and receive audio sample rate (in Hz) for the repeater
+TX_SAMPLE_RATE = 48000
+RX_SAMPLE_RATE = 48000
+
+# Set up the GPIO pin for the PTT button
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PTT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Initialize the radio module
+radio.init(FREQUENCY, TX_OFFSET, RX_OFFSET, TX_SQUELCH, RX_SQUELCH,
+           TX_DEVIATION, RX_DEVIATION, TX_SAMPLE_RATE, RX_SAMPLE_RATE)
+
+# Create a radio packet for transmitting and receiving audio
+packet = radio.Packet()
+
+# Create a flag to indicate whether the PTT button is pressed
+ptt_active = False
+
+# Continuously loop through the following steps:
+while True:
+    # Check the state of the PTT button
+    if GPIO.input(PTT_PIN) == 0:
+        # If the button is pressed, set the ptt_active flag to True
+        ptt_active = True
+    else:
+        # If the button is not pressed, set the ptt_active flag to False
+        ptt_active = False
+
+    # If the ptt_
