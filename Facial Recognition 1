@@ -1,0 +1,28 @@
+# Import the necessary libraries
+import cv2
+import smtplib
+
+# Set the email address that will be used to send the message
+EMAIL_ADDRESS = "your_email@example.com"
+
+# Set the password for the email address
+EMAIL_PASSWORD = "your_email_password"
+
+# Set the SMTP server and port for sending the email
+SMTP_SERVER = "smtp.example.com"
+SMTP_PORT = 587
+
+# Set the message that will be sent when a face is detected
+MESSAGE = "A face was detected!"
+
+# Set the subject line for the email
+SUBJECT = "Face Detection Alert"
+
+# Set the minimum size (in pixels) for a detected face
+MIN_FACE_SIZE = (100, 100)
+
+# Load the face detection cascade classifier
+face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+# Initialize the USB camera and get a reference to the raw video capture
+camera = cv2
