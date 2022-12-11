@@ -1,0 +1,42 @@
+import bluetooth
+from gpiozero import OutputDevice
+
+# Set up the GPIO pin that will be used to control the Caterpillar equipment
+caterpillar_pin = OutputDevice(17)
+
+# Set up the Bluetooth network using the Raspberry Pi's built-in Bluetooth adapter
+server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
+server_sock.bind(("",bluetooth.PORT_ANY))
+server_sock.listen(1)
+
+# Set up a dictionary to store the connected clients
+clients = {}
+
+while True:
+    # Accept incoming connections
+    client_sock, client_info = server_sock.accept()
+    print("Accepted connection from ", client_info)
+
+    # Add the new client to the dictionary of connected clients
+    clients[client_info] = client_sock
+
+    # Start the Caterpillar equipment if this is the first client to connect
+    if len(clients) == 1:
+        caterpillar_pin.on()
+
+    # Listen for disconnection events from any of the clients
+    try:
+        data = client_sock.recv(1024)
+        if not data:
+            print("Client has disconnected")
+
+            # Remove the client from the dictionary
+            del clients[client_info]
+
+            # Stop the Caterpillar equipment if this was the last remaining client
+            if len(clients) == 0:
+                caterpillar_pin.off()
+    except IOError:
+        pass
+
+server_sock.close()
