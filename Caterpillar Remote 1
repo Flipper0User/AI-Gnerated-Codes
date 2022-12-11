@@ -1,0 +1,42 @@
+import RPi.GPIO as GPIO
+import bluetooth
+from pyJ1939 import *
+
+# Set up the GPIO pins on the Raspberry Pi
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(19, GPIO.OUT)
+
+# Connect to the J1939 bus
+j1939 = J1939()
+
+# Set the appropriate address on the J1939 bus
+j1939.set_address(0x11)
+
+# Set up the Bluetooth socket on the Raspberry Pi
+server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
+
+# Bind the Bluetooth socket to a port
+port = 1
+server_sock.bind(("",port))
+server_sock.listen(1)
+
+# Override the safety features on the Caterpillar equipment
+j1939.send_message(PGN_COMMANDED_THROTTLE, [0x64, 0x00])
+
+try:
+    # Keep listening for incoming connections
+    while True:
+        client_sock,address = server_sock.accept()
+        print "Accepted connection from ",address
+
+        # Start the equipment when a device connects
+        j1939.send_message(PGN_REQUEST_FOR_EMERGENCY_ENGINE_SHUTDOWN, [0x01])
+
+        # Stop the equipment when the device disconnects
+        client_sock.close()
+        j1939.send_message(PGN_REQUEST_FOR_EMERGENCY_ENGINE_SHUTDOWN, [0x00])
+
+except:
+    # Clean up the GPIO and Bluetooth sockets
+    GPIO.cleanup()
+    server_sock.close()
